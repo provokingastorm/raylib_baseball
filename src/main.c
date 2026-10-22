@@ -136,8 +136,8 @@ static void draw_baseball_field(void)
     DrawLineEx((Vector2){FIELD_RIGHT - 7, 225}, (Vector2){HOME_PLATE_X, HOME_PLATE_Y}, 4.0f, COLOR_LINE);
 
     /* First and third base dirt */
-    DrawPoly((Vector2){FIELD_RIGHT - 50, 240}, 4, 61.0f, 45.0f, 10.0f, COLOR_DIRT);
-    DrawPoly((Vector2){FIELD_LEFT + 50, 240}, 4, 61.0f, 45.0f, 10.0f, COLOR_DIRT);
+    DrawPoly((Vector2){FIELD_RIGHT - 50, 240}, 4, 45.0f, 10.0f, COLOR_DIRT);
+    DrawPoly((Vector2){FIELD_LEFT + 50, 240}, 4, 45.0f, 10.0f, COLOR_DIRT);
 
     /* Pitcher's mound */
     DrawEllipse(PITCHER_MOUND_X, PITCHER_MOUND_Y + 1, 139, 27, COLOR_DIRT);
@@ -309,12 +309,12 @@ static void reset_game(GameData *game_data)
     game_data->ball_target_y = HOME_PLATE_Y - 35;
     game_data->ball_x = game_data->ball_start_x;
     game_data->ball_y = game_data->ball_start_y;
-    game_data->balls = 1;
-    game_data->strikes = 1;
-    game_data->outs = 2;
+    game_data->balls = 0;
+    game_data->strikes = 0;
+    game_data->outs = 0;
     game_data->inning = 1;
-    game_data->player_score = 3;
-    game_data->opponent_score = 3;
+    game_data->player_score = 0;
+    game_data->opponent_score = 0;
     game_data->pitch_in_zone = true;
     game_data->swing_hit = false;
 }
@@ -326,6 +326,21 @@ static void start_pitch(GameData *game_data)
     game_data->ball_x = game_data->ball_start_x;
     game_data->ball_y = game_data->ball_start_y;
     game_data->swing_hit = false;
+}
+
+static void register_strike(GameData *game_data)
+{
+    game_data->strikes += 1;
+    if (game_data->strikes >= 3)
+    {
+        game_data->balls = 0;
+        game_data->strikes = 0;
+        game_data->outs += 1;
+        if (game_data->outs >= 3)
+        {
+            game_data->outs = 0;
+        }
+    }
 }
 
 static void register_swing(GameData *game_data)
@@ -362,7 +377,7 @@ static void update_game(GameData *game_data, float delta_time)
 
         if (game_data->pitch_timer >= PITCH_FLIGHT_SECONDS)
         {
-            game_data->strikes += 1;
+            register_strike(game_data);
             game_data->message_timer = MESSAGE_SECONDS;
             start_pitch(game_data);
         }
@@ -380,7 +395,7 @@ static void update_game(GameData *game_data, float delta_time)
             }
             else
             {
-                game_data->strikes += 1;
+                register_strike(game_data);
             }
 
             game_data->message_timer = MESSAGE_SECONDS;
