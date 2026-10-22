@@ -67,7 +67,6 @@ static const Color COLOR_ORANGE = {217, 77, 18, 255};
 /* ------------------------------------------------------------------------- */
 typedef enum GameState {
     GAME_STATE_PLAYING,
-    GAME_STATE_SWING,
     GAME_STATE_RESULT
 } GameState;
 
@@ -90,6 +89,7 @@ typedef struct GameData {
     int opponent_score;
     bool pitch_in_zone;
     bool swing_hit;
+    bool is_swinging;
 } GameData;
 
 /* ------------------------------------------------------------------------- */
@@ -298,10 +298,11 @@ static void reset_game(GameData *game_data)
     game_data->pitch_timer = 0.0f;
     game_data->swing_timer = 0.0f;
     game_data->message_timer = 0.0f;
+    game_data->is_swinging = false;
     game_data->ball_start_x = PITCHER_MOUND_X;
     game_data->ball_start_y = PITCHER_MOUND_Y - 30;
     game_data->ball_target_x = HOME_PLATE_X + 6;
-    game_data->ball_target_y = HOME_PLATE_Y - 35;
+    game_data->ball_target_y = HOME_PLATE_Y - BALL_RADIUS;
     game_data->ball_x = game_data->ball_start_x;
     game_data->ball_y = game_data->ball_start_y;
     game_data->balls = 0;
@@ -318,6 +319,7 @@ static void start_pitch(GameData *game_data)
 {
     game_data->game_state = GAME_STATE_PLAYING;
     game_data->pitch_timer = 0.0f;
+    game_data->is_swinging = false;
     game_data->ball_x = game_data->ball_start_x;
     game_data->ball_y = game_data->ball_start_y;
     game_data->swing_hit = false;
@@ -345,7 +347,7 @@ static void register_swing(GameData *game_data)
         return;
     }
 
-    game_data->game_state = GAME_STATE_SWING;
+    game_data->is_swinging = true;
     game_data->swing_timer = 0.0f;
     game_data->swing_hit = game_data->pitch_timer > PITCH_FLIGHT_SECONDS * 0.55f;
 }
@@ -358,13 +360,13 @@ static void update_game(GameData *game_data, float delta_time)
         return;
     }
 
-    if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_ENTER))
-    {
-        register_swing(game_data);
-    }
-
     if (game_data->game_state == GAME_STATE_PLAYING)
     {
+        if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_ENTER))
+        {
+            register_swing(game_data);
+        }
+
         game_data->pitch_timer += delta_time;
         const float progress = ease_in_out(game_data->pitch_timer / PITCH_FLIGHT_SECONDS);
         game_data->ball_x = Lerp(game_data->ball_start_x, game_data->ball_target_x, progress);
@@ -376,25 +378,26 @@ static void update_game(GameData *game_data, float delta_time)
             game_data->message_timer = MESSAGE_SECONDS;
             start_pitch(game_data);
         }
-    }
-    else if (game_data->game_state == GAME_STATE_SWING)
-    {
-        game_data->swing_timer += delta_time;
-        if (game_data->swing_timer >= BAT_SWING_SECONDS)
-        {
-            if (game_data->swing_hit)
-            {
-                game_data->player_score += 1;
-                game_data->balls = 0;
-                game_data->strikes = 0;
-            }
-            else
-            {
-                register_strike(game_data);
-            }
 
-            game_data->message_timer = MESSAGE_SECONDS;
-            start_pitch(game_data);
+        if (game_data->is_swinging)
+        {
+            game_data->swing_timer += delta_time;
+            if (game_data->swing_timer >= BAT_SWING_SECONDS)
+            {
+                if (game_data->swing_hit)
+                {
+                    game_data->player_score += 1;
+                    game_data->balls = 0;
+                    game_data->strikes = 0;
+                }
+                else
+                {
+                    register_strike(game_data);
+                }
+
+                game_data->message_timer = MESSAGE_SECONDS;
+                start_pitch(game_data);
+            }
         }
     }
 
@@ -416,13 +419,13 @@ static void draw_game_scene(const GameData *game_data)
     draw_score_panel(game_data);
 
     float swing_amount = 0.0f;
-    if (game_data->game_state == GAME_STATE_SWING)
+    if (game_data->is_swinging)
     {
         swing_amount = clamp_float_value(game_data->swing_timer / BAT_SWING_SECONDS, 0.0f, 1.0f);
     }
 
     float pitcher_animation = 0.0f;
-    if (game_data->game_state == GAME_STATE_PLAYING)
+    if (game_data->game_state == GAME_STATE_PLAYING && !game_data->is_swinging)
     {
         pitcher_animation = game_data->pitch_timer / PITCH_FLIGHT_SECONDS;
     }
@@ -436,7 +439,7 @@ static void draw_game_scene(const GameData *game_data)
     DrawLineEx((Vector2){HOME_PLATE_X - 19, HOME_PLATE_Y + 35}, (Vector2){HOME_PLATE_X + 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
 
     /* Ball */
-    if (game_data->game_state == GAME_STATE_PLAYING)
+    if (game_data->game_state == GAME_STATE_PLAYING && !game_data->is_swinging)
     {
         DrawCircle((int)game_data->ball_x, (int)game_data->ball_y, BALL_RADIUS, COLOR_WHITE);
         DrawCircle((int)game_data->ball_x - 2, (int)game_data->ball_y - 1, 2, COLOR_RED);
@@ -446,7 +449,7 @@ static void draw_game_scene(const GameData *game_data)
     {
         const char *message = game_data->swing_hit ? "HIT!" : "STRIKE";
         int message_width = MeasureText(message, 34);
-        draw_pixel_text(message, HOME_PLATE_X - message_width / 2, 300, 34, COLOR_WHITE);
+        draw_pixel_text(message, HOME_PLATE_X - message_width / 2, 330, 34, COLOR_WHITE);
     }
 
     /* Tiny control hint, hidden enough to preserve the reference feel. */
