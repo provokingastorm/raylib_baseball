@@ -31,11 +31,11 @@
 #define HUD_WIDTH 245
 #define HUD_TOP_Y 0
 #define HUD_HEIGHT 728
-#define SCORE_BOX_X 845
+#define SCORE_BOX_X (HUD_RIGHT_X + (HUD_WIDTH - SCORE_BOX_WIDTH) / 2)
 #define SCORE_BOX_Y 340
 #define SCORE_BOX_WIDTH 140
 #define SCORE_BOX_HEIGHT 88
-#define COUNT_BOX_X 845
+#define COUNT_BOX_X (HUD_RIGHT_X + (HUD_WIDTH - COUNT_BOX_WIDTH) / 2)
 #define COUNT_BOX_Y 449
 #define COUNT_BOX_WIDTH 140
 #define COUNT_BOX_HEIGHT 81
@@ -120,12 +120,22 @@ static void draw_pixel_text(const char *text, int x, int y, int font_size, Color
     DrawText(text, x, y, font_size, color);
 }
 
+static void draw_centered_pixel_text(const char *text, int panel_x, int panel_width, int y, int font_size, Color color)
+{
+    int text_width = MeasureText(text, font_size);
+    draw_pixel_text(text, panel_x + (panel_width - text_width) / 2, y, font_size, color);
+}
+
 /* -------------------------------------------------------------------------
    Field and bases
    ------------------------------------------------------------------------- */
 static void draw_baseball_field(void)
 {
     DrawRectangle(FIELD_LEFT, FIELD_TOP, FIELD_RIGHT - FIELD_LEFT, FIELD_BOTTOM, COLOR_FIELD);
+
+    /* Infield dirt */
+    DrawEllipse(HOME_PLATE_X, INFIELD_TOP_Y + 94, 228, 91, COLOR_DIRT);
+    DrawRectangle(HOME_PLATE_X - 115, INFIELD_TOP_Y + 43, 230, 74, COLOR_DIRT);
 
     /* Subtle center-field mowing stripe */
     DrawRectangle(FIELD_LEFT + 7, 0, 7, SCREEN_HEIGHT, COLOR_FIELD_DARK);
@@ -143,10 +153,6 @@ static void draw_baseball_field(void)
     DrawEllipse(PITCHER_MOUND_X, PITCHER_MOUND_Y + 1, 139, 27, COLOR_DIRT);
     DrawEllipse(PITCHER_MOUND_X, PITCHER_MOUND_Y - 1, 126, 22, COLOR_DIRT_DARK);
     DrawRectangle(PITCHER_MOUND_X - 20, PITCHER_MOUND_Y - 5, 40, 7, COLOR_WHITE);
-
-    /* Infield dirt */
-    DrawEllipse(HOME_PLATE_X, INFIELD_TOP_Y + 94, 228, 91, COLOR_DIRT);
-    DrawRectangle(HOME_PLATE_X - 115, INFIELD_TOP_Y + 43, 230, 74, COLOR_DIRT);
 
     /* Base paths */
     DrawLineEx((Vector2){HOME_PLATE_X, HOME_PLATE_Y}, (Vector2){HOME_PLATE_X - BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, 5.0f, COLOR_LINE);
@@ -260,12 +266,6 @@ static void draw_score_panel(const GameData *game_data)
     DrawRectangle(SCORE_BOX_X, SCORE_BOX_Y, SCORE_BOX_WIDTH, SCORE_BOX_HEIGHT, COLOR_BLACK);
     DrawRectangle(COUNT_BOX_X, COUNT_BOX_Y, COUNT_BOX_WIDTH, COUNT_BOX_HEIGHT, COLOR_BLACK);
 
-    /*draw_pixel_text("B  1", SCORE_BOX_X + 7, SCORE_BOX_Y + 7, SCORE_FONT_SIZE, COLOR_WHITE);
-    snprintf(text_buffer, sizeof(text_buffer), "S  %d", game_data->player_score);
-    draw_pixel_text(text_buffer, SCORE_BOX_X + 7, SCORE_BOX_Y + 32, SCORE_FONT_SIZE, COLOR_WHITE);
-    snprintf(text_buffer, sizeof(text_buffer), "N  %d", game_data->opponent_score);
-    draw_pixel_text(text_buffer, SCORE_BOX_X + 7, SCORE_BOX_Y + 57, SCORE_FONT_SIZE, COLOR_WHITE);*/
-
     draw_pixel_text("B", COUNT_BOX_X + 8, COUNT_BOX_Y + 6, SCORE_FONT_SIZE, COLOR_WHITE);
     draw_pixel_text("S", COUNT_BOX_X + 8, COUNT_BOX_Y + 32, SCORE_FONT_SIZE, COLOR_WHITE);
     draw_pixel_text("O", COUNT_BOX_X + 8, COUNT_BOX_Y + 58, SCORE_FONT_SIZE, COLOR_WHITE);
@@ -285,13 +285,13 @@ static void draw_score_panel(const GameData *game_data)
         DrawRectangle(COUNT_BOX_X + 47 + index * 25, COUNT_BOX_Y + 64, 17, 17, COLOR_WHITE);
     }
 
-    /* Bottom player labels, intentionally pixelated and clipped like the reference. */
-    draw_pixel_text("3 Carter", HUD_RIGHT_X + 26, 596, SMALL_FONT_SIZE, COLOR_WHITE);
-    draw_pixel_text("Ave .271", HUD_RIGHT_X + 54, 663, SMALL_FONT_SIZE, COLOR_WHITE);
-    draw_pixel_text("Hr. 24", HUD_RIGHT_X + 61, 691, SMALL_FONT_SIZE, COLOR_WHITE);
+    /* Bottom player labels centered within their HUD panels. */
+    draw_centered_pixel_text("3 Carter", HUD_RIGHT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("Avg .271", HUD_RIGHT_X, HUD_WIDTH, 663, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("Hr. 24", HUD_RIGHT_X, HUD_WIDTH, 691, SMALL_FONT_SIZE, COLOR_WHITE);
 
-    draw_pixel_text("O Bennett", 0, 596, SMALL_FONT_SIZE, COLOR_WHITE);
-    draw_pixel_text("Era. .281", 0, 663, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("O Bennett", HUD_LEFT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("Era. .281", HUD_LEFT_X, HUD_WIDTH, 663, SMALL_FONT_SIZE, COLOR_WHITE);
 }
 
 /* -------------------------------------------------------------------------
@@ -435,17 +435,17 @@ static void draw_game_scene(const GameData *game_data)
     draw_pitcher((Vector2){PITCHER_MOUND_X, PITCHER_MOUND_Y}, pitcher_animation);
     draw_batter((Vector2){HOME_PLATE_X - 95, HOME_PLATE_Y - 7}, swing_amount);
 
+    /* Home plate markings */
+    DrawLineEx((Vector2){HOME_PLATE_X - 31, HOME_PLATE_Y + 5}, (Vector2){HOME_PLATE_X - 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
+    DrawLineEx((Vector2){HOME_PLATE_X + 31, HOME_PLATE_Y + 5}, (Vector2){HOME_PLATE_X + 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
+    DrawLineEx((Vector2){HOME_PLATE_X - 19, HOME_PLATE_Y + 35}, (Vector2){HOME_PLATE_X + 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
+
     /* Ball */
     if (game_data->game_state == GAME_STATE_PLAYING)
     {
         DrawCircle((int)game_data->ball_x, (int)game_data->ball_y, BALL_RADIUS, COLOR_WHITE);
         DrawCircle((int)game_data->ball_x - 2, (int)game_data->ball_y - 1, 2, COLOR_RED);
     }
-
-    /* Home plate markings */
-    DrawLineEx((Vector2){HOME_PLATE_X - 31, HOME_PLATE_Y + 5}, (Vector2){HOME_PLATE_X - 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
-    DrawLineEx((Vector2){HOME_PLATE_X + 31, HOME_PLATE_Y + 5}, (Vector2){HOME_PLATE_X + 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
-    DrawLineEx((Vector2){HOME_PLATE_X - 19, HOME_PLATE_Y + 35}, (Vector2){HOME_PLATE_X + 19, HOME_PLATE_Y + 35}, 4, COLOR_LINE);
 
     if (game_data->message_timer > 0.0f)
     {
