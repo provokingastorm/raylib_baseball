@@ -260,11 +260,11 @@ static void draw_score_panel(const GameData *game_data)
     DrawRectangle(SCORE_BOX_X, SCORE_BOX_Y, SCORE_BOX_WIDTH, SCORE_BOX_HEIGHT, COLOR_BLACK);
     DrawRectangle(COUNT_BOX_X, COUNT_BOX_Y, COUNT_BOX_WIDTH, COUNT_BOX_HEIGHT, COLOR_BLACK);
 
-    draw_pixel_text("B  1", SCORE_BOX_X + 7, SCORE_BOX_Y + 7, SCORE_FONT_SIZE, COLOR_WHITE);
+    /*draw_pixel_text("B  1", SCORE_BOX_X + 7, SCORE_BOX_Y + 7, SCORE_FONT_SIZE, COLOR_WHITE);
     snprintf(text_buffer, sizeof(text_buffer), "S  %d", game_data->player_score);
     draw_pixel_text(text_buffer, SCORE_BOX_X + 7, SCORE_BOX_Y + 32, SCORE_FONT_SIZE, COLOR_WHITE);
     snprintf(text_buffer, sizeof(text_buffer), "N  %d", game_data->opponent_score);
-    draw_pixel_text(text_buffer, SCORE_BOX_X + 7, SCORE_BOX_Y + 57, SCORE_FONT_SIZE, COLOR_WHITE);
+    draw_pixel_text(text_buffer, SCORE_BOX_X + 7, SCORE_BOX_Y + 57, SCORE_FONT_SIZE, COLOR_WHITE);*/
 
     draw_pixel_text("B", COUNT_BOX_X + 8, COUNT_BOX_Y + 6, SCORE_FONT_SIZE, COLOR_WHITE);
     draw_pixel_text("S", COUNT_BOX_X + 8, COUNT_BOX_Y + 32, SCORE_FONT_SIZE, COLOR_WHITE);
@@ -286,12 +286,12 @@ static void draw_score_panel(const GameData *game_data)
     }
 
     /* Bottom player labels, intentionally pixelated and clipped like the reference. */
-    draw_pixel_text("3Carter", HUD_RIGHT_X + 26, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_pixel_text("3 Carter", HUD_RIGHT_X + 26, 596, SMALL_FONT_SIZE, COLOR_WHITE);
     draw_pixel_text("Ave .271", HUD_RIGHT_X + 54, 663, SMALL_FONT_SIZE, COLOR_WHITE);
     draw_pixel_text("Hr. 24", HUD_RIGHT_X + 61, 691, SMALL_FONT_SIZE, COLOR_WHITE);
 
-    draw_pixel_text("OSchrld", 0, 596, SMALL_FONT_SIZE, COLOR_WHITE);
-    draw_pixel_text("Ea. .281", 0, 663, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_pixel_text("O Bennett", 0, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_pixel_text("Era. .281", 0, 663, SMALL_FONT_SIZE, COLOR_WHITE);
 }
 
 /* -------------------------------------------------------------------------
@@ -371,7 +371,7 @@ static void update_game(GameData *game_data, float delta_time)
     if (game_data->game_state == GAME_STATE_PLAYING)
     {
         game_data->pitch_timer += delta_time;
-        float progress = ease_in_out(game_data->pitch_timer / PITCH_FLIGHT_SECONDS);
+        const float progress = ease_in_out(game_data->pitch_timer / PITCH_FLIGHT_SECONDS);
         game_data->ball_x = Lerp(game_data->ball_start_x, game_data->ball_target_x, progress);
         game_data->ball_y = Lerp(game_data->ball_start_y, game_data->ball_target_y, progress);
 
@@ -451,7 +451,7 @@ static void draw_game_scene(const GameData *game_data)
     {
         const char *message = game_data->swing_hit ? "HIT!" : "STRIKE";
         int message_width = MeasureText(message, 34);
-        draw_pixel_text(message, HOME_PLATE_X - message_width / 2, 455, 34, COLOR_WHITE);
+        draw_pixel_text(message, HOME_PLATE_X - message_width / 2, 300, 34, COLOR_WHITE);
     }
 
     /* Tiny control hint, hidden enough to preserve the reference feel. */
