@@ -14,8 +14,8 @@
 #define TARGET_FPS 60
 
 /* Field layout */
-#define FIELD_LEFT 252
-#define FIELD_RIGHT 747
+#define FIELD_LEFT 0
+#define FIELD_RIGHT 993
 #define FIELD_TOP 0
 #define FIELD_BOTTOM 728
 #define INFIELD_TOP_Y 505
@@ -29,16 +29,12 @@
 #define HUD_LEFT_X 0
 #define HUD_RIGHT_X 748
 #define HUD_WIDTH 245
-#define HUD_TOP_Y 0
+#define HUD_TOP_Y 580
 #define HUD_HEIGHT 728
-#define SCORE_BOX_X (HUD_RIGHT_X + (HUD_WIDTH - SCORE_BOX_WIDTH) / 2)
-#define SCORE_BOX_Y 340
-#define SCORE_BOX_WIDTH 140
-#define SCORE_BOX_HEIGHT 88
 #define COUNT_BOX_X (HUD_RIGHT_X + (HUD_WIDTH - COUNT_BOX_WIDTH) / 2)
-#define COUNT_BOX_Y 449
+#define COUNT_BOX_Y 430
 #define COUNT_BOX_WIDTH 140
-#define COUNT_BOX_HEIGHT 81
+#define COUNT_BOX_HEIGHT 90
 
 /* Pixel-art sizing */
 #define PIXEL_UNIT 7
@@ -138,8 +134,8 @@ static void draw_baseball_field(void)
     DrawRectangle(HOME_PLATE_X - 115, INFIELD_TOP_Y + 43, 230, 74, COLOR_DIRT);
 
     /* Subtle center-field mowing stripe */
-    DrawRectangle(FIELD_LEFT + 7, 0, 7, SCREEN_HEIGHT, COLOR_FIELD_DARK);
-    DrawRectangle(FIELD_RIGHT - 14, 0, 7, SCREEN_HEIGHT, COLOR_FIELD_DARK);
+    /*DrawRectangle(FIELD_LEFT + 7, 0, 7, SCREEN_HEIGHT, COLOR_FIELD_DARK);
+    DrawRectangle(FIELD_RIGHT - 14, 0, 7, SCREEN_HEIGHT, COLOR_FIELD_DARK);*/
 
     /* Foul lines */
     DrawLineEx((Vector2){FIELD_LEFT + 7, 225}, (Vector2){HOME_PLATE_X, HOME_PLATE_Y}, 4.0f, COLOR_LINE);
@@ -155,13 +151,13 @@ static void draw_baseball_field(void)
     DrawRectangle(PITCHER_MOUND_X - 20, PITCHER_MOUND_Y - 5, 40, 7, COLOR_WHITE);
 
     /* Base paths */
-    DrawLineEx((Vector2){HOME_PLATE_X, HOME_PLATE_Y}, (Vector2){HOME_PLATE_X - BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, 5.0f, COLOR_LINE);
+    /*DrawLineEx((Vector2) { HOME_PLATE_X, HOME_PLATE_Y }, (Vector2) { HOME_PLATE_X - BASE_HALF_SIZE, INFIELD_TOP_Y + 5 }, 5.0f, COLOR_LINE);
     DrawLineEx((Vector2){HOME_PLATE_X, HOME_PLATE_Y}, (Vector2){HOME_PLATE_X + BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, 5.0f, COLOR_LINE);
     DrawLineEx((Vector2){HOME_PLATE_X - BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, (Vector2){HOME_PLATE_X - 1, INFIELD_TOP_Y - 45}, 5.0f, COLOR_LINE);
-    DrawLineEx((Vector2){HOME_PLATE_X + BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, (Vector2){HOME_PLATE_X + 1, INFIELD_TOP_Y - 45}, 5.0f, COLOR_LINE);
+    DrawLineEx((Vector2){HOME_PLATE_X + BASE_HALF_SIZE, INFIELD_TOP_Y + 5}, (Vector2){HOME_PLATE_X + 1, INFIELD_TOP_Y - 45}, 5.0f, COLOR_LINE);*/
 
     /* Bases */
-    DrawRectangle(HOME_PLATE_X - 10, HOME_PLATE_Y - 2, 20, 12, COLOR_WHITE);
+    /*DrawRectangle(HOME_PLATE_X - 10, HOME_PLATE_Y - 2, 20, 12, COLOR_WHITE);
     DrawTriangle(
         (Vector2){HOME_PLATE_X - 15, HOME_PLATE_Y - 5},
         (Vector2){HOME_PLATE_X + 15, HOME_PLATE_Y - 5},
@@ -170,7 +166,7 @@ static void draw_baseball_field(void)
 
     DrawRectangle(FIELD_LEFT + 31, INFIELD_TOP_Y - 52, 20, 13, COLOR_WHITE);
     DrawRectangle(FIELD_RIGHT - 51, INFIELD_TOP_Y - 52, 20, 13, COLOR_WHITE);
-    DrawRectangle(HOME_PLATE_X - 10, INFIELD_TOP_Y - 64, 20, 13, COLOR_WHITE);
+    DrawRectangle(HOME_PLATE_X - 10, INFIELD_TOP_Y - 64, 20, 13, COLOR_WHITE);*/
 }
 
 /* -------------------------------------------------------------------------
@@ -255,15 +251,11 @@ static void draw_score_panel(const GameData *game_data)
 {
     char text_buffer[32];
 
-    DrawRectangle(HUD_LEFT_X, HUD_TOP_Y, HUD_WIDTH, HUD_HEIGHT, COLOR_BLACK);
-    DrawRectangle(HUD_RIGHT_X, HUD_TOP_Y, HUD_WIDTH, HUD_HEIGHT, COLOR_BLACK);
-
     /* thin field-edge highlights */
     DrawRectangle(HUD_WIDTH - 3, 0, 3, SCREEN_HEIGHT, COLOR_FIELD_DARK);
     DrawRectangle(HUD_RIGHT_X, 0, 3, SCREEN_HEIGHT, COLOR_FIELD_DARK);
 
-    /* Score / count boxes */
-    DrawRectangle(SCORE_BOX_X, SCORE_BOX_Y, SCORE_BOX_WIDTH, SCORE_BOX_HEIGHT, COLOR_BLACK);
+    /* Count box */
     DrawRectangle(COUNT_BOX_X, COUNT_BOX_Y, COUNT_BOX_WIDTH, COUNT_BOX_HEIGHT, COLOR_BLACK);
 
     draw_pixel_text("B", COUNT_BOX_X + 8, COUNT_BOX_Y + 6, SCORE_FONT_SIZE, COLOR_WHITE);
@@ -285,12 +277,15 @@ static void draw_score_panel(const GameData *game_data)
         DrawRectangle(COUNT_BOX_X + 47 + index * 25, COUNT_BOX_Y + 64, 17, 17, COLOR_WHITE);
     }
 
+    DrawRectangle(HUD_LEFT_X, HUD_TOP_Y, HUD_WIDTH, HUD_HEIGHT, COLOR_BLACK);
+    DrawRectangle(HUD_RIGHT_X, HUD_TOP_Y, HUD_WIDTH, HUD_HEIGHT, COLOR_BLACK);
+
     /* Bottom player labels centered within their HUD panels. */
-    draw_centered_pixel_text("3 Carter", HUD_RIGHT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("3 - LaPage", HUD_RIGHT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
     draw_centered_pixel_text("Avg .271", HUD_RIGHT_X, HUD_WIDTH, 663, SMALL_FONT_SIZE, COLOR_WHITE);
     draw_centered_pixel_text("Hr. 24", HUD_RIGHT_X, HUD_WIDTH, 691, SMALL_FONT_SIZE, COLOR_WHITE);
 
-    draw_centered_pixel_text("O Bennett", HUD_LEFT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
+    draw_centered_pixel_text("P - Bennett", HUD_LEFT_X, HUD_WIDTH, 596, SMALL_FONT_SIZE, COLOR_WHITE);
     draw_centered_pixel_text("Era. .281", HUD_LEFT_X, HUD_WIDTH, 663, SMALL_FONT_SIZE, COLOR_WHITE);
 }
 
